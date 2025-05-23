@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat Anonyme</title>
+  <style>
+    body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
+    #messages { background: white; padding: 10px; height: 300px; overflow-y: scroll; border: 1px solid #ccc; margin-bottom: 10px; }
+    input, button { padding: 10px; font-size: 16px; }
+    #form { display: flex; gap: 10px; }
+  </style>
+</head>
+<body>
+  <h2>💬 Chat Anonyme</h2>
+  <div id="messages">Chargement des messages...</div>
+
+  <div id="form">
+    <input id="message" placeholder="Tape ton message ici..." />
+    <button onclick="send()">Envoyer</button>
+  </div>
+
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbycoB6rPYHTNIT7HLDAkFkEYHruUbKvjf0b22w8LCKMdpl6-6oix-u9UxdpDm-L8gh7/exec";
+
+    async function fetchMessages() {
+      const res = await fetch(scriptURL);
+      const messages = await res.json();
+      document.getElementById("messages").innerHTML = messages.reverse().map(m =>
+        `<div><strong>•</strong> ${m.message}</div>`
+      ).join("");
+    }
+
+    async function send() {
+      const msg = document.getElementById("message").value.trim();
+      if (!msg) return;
+      await fetch(scriptURL, {
+        method: 'POST',
+        body: JSON.stringify({ message: msg }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      document.getElementById("message").value = "";
+      fetchMessages();
+    }
+
+    // Auto-refresh toutes les 5 secondes
+    fetchMessages();
+    setInterval(fetchMessages, 5000);
+  </script>
+</body>
+</html>
