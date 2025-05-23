@@ -2,89 +2,50 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Chat Anonyme</title>
+  <title>Chat anonyme Lixiod</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 40px auto;
-      background: #f9f9f9;
-      padding: 20px;
-      border-radius: 8px;
-    }
-    #messages {
-      border: 1px solid #ccc;
-      background: #fff;
-      padding: 10px;
-      height: 300px;
-      overflow-y: auto;
-      margin-bottom: 15px;
-      border-radius: 4px;
-    }
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-    }
-    input {
-      width: 80%;
-    }
-    button {
-      width: 18%;
-      background: #28a745;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #218838;
-    }
+    body { font-family: Arial, sans-serif; background: #f1f1f1; padding: 20px; }
+    #messages { background: #fff; padding: 10px; border: 1px solid #ccc; height: 300px; overflow-y: scroll; margin-bottom: 10px; }
+    input, button { padding: 10px; font-size: 16px; }
   </style>
 </head>
 <body>
-  <h1>💬 Chat Anonyme</h1>
-
-  <div id="messages">Chargement des messages...</div>
-
-  <input type="text" id="messageInput" placeholder="Votre message..." />
+  <h1>💬 Lixiod Chat</h1>
+  <div id="messages">Chargement...</div>
+  <input type="text" id="message" placeholder="Ton message">
   <button onclick="sendMessage()">Envoyer</button>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz12ZQuBf91LwKWOOjpzyMorZemtymipYX6Fo4ph4tAdsKf63epnG02vTTyQ46dNkvA/exec";
 
-    function sendMessage() {
-      const input = document.getElementById("messageInput");
-      const message = input.value.trim();
-      if (!message) return;
-
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify({ message }),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      }).then(() => {
-        input.value = "";
-        loadMessages();
-      });
-    }
-
     function loadMessages() {
       fetch(SCRIPT_URL)
         .then(res => res.json())
         .then(data => {
-          const container = document.getElementById("messages");
-          container.innerHTML = "";
-          data.reverse().forEach(msg => {
+          const box = document.getElementById("messages");
+          box.innerHTML = "";
+          data.reverse().forEach(entry => {
             const div = document.createElement("div");
-            const date = new Date(msg.date);
-            div.textContent = `[${date.toLocaleTimeString()}] ${msg.message}`;
-            container.appendChild(div);
+            div.textContent = `${entry.date} : ${entry.message}`;
+            box.appendChild(div);
           });
         });
     }
 
+    function sendMessage() {
+      const input = document.getElementById("message");
+      const message = encodeURIComponent(input.value);
+      if (!message) return;
+      fetch(SCRIPT_URL + "?message=" + message)
+        .then(() => {
+          input.value = "";
+          loadMessages();
+        })
+        .catch(console.error);
+    }
+
     loadMessages();
-    setInterval(loadMessages, 5000); // rafraîchit toutes les 5 secondes
+    setInterval(loadMessages, 5000); // Actualise toutes les 5 secondes
   </script>
 </body>
 </html>
