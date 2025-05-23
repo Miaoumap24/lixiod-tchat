@@ -4,48 +4,84 @@
   <meta charset="UTF-8">
   <title>Chat Anonyme</title>
   <style>
-    body { font-family: sans-serif; max-width: 500px; margin: auto; padding: 20px; background: #f2f2f2; }
-    #messages { background: white; padding: 10px; height: 300px; overflow-y: scroll; border: 1px solid #ccc; margin-bottom: 10px; }
-    #form { display: flex; gap: 10px; }
-    input[type="text"] { flex: 1; padding: 10px; }
-    button { padding: 10px 20px; }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    #messages {
+      border: 1px solid #ccc;
+      background: #fff;
+      padding: 10px;
+      height: 300px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      border-radius: 4px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+    }
+    input {
+      width: 80%;
+    }
+    button {
+      width: 18%;
+      background: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #218838;
+    }
   </style>
 </head>
 <body>
-  <h2>💬 Chat Anonyme</h2>
-  <div id="messages">Chargement...</div>
-  <form id="form">
-    <input type="text" id="msg" placeholder="Ton message..." required>
-    <button type="submit">Envoyer</button>
-  </form>
+  <h1>💬 Chat Anonyme</h1>
+
+  <div id="messages">Chargement des messages...</div>
+
+  <input type="text" id="messageInput" placeholder="Votre message..." />
+  <button onclick="sendMessage()">Envoyer</button>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbwnBBgFw4vRL_ce125JppEZ1f3UUmplM8Gpd5Av4YoN_K-Y7hri2no8CFUmrxQeyMeu/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz12ZQuBf91LwKWOOjpzyMorZemtymipYX6Fo4ph4tAdsKf63epnG02vTTyQ46dNkvA/exec";
 
-    const messagesDiv = document.getElementById("messages");
-    const form = document.getElementById("form");
-    const input = document.getElementById("msg");
-
-    async function loadMessages() {
-      const res = await fetch(scriptURL);
-      const data = await res.json();
-      messagesDiv.innerHTML = data.map(m => `<p><strong>•</strong> ${m.message}</p>`).reverse().join('');
-    }
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+    function sendMessage() {
+      const input = document.getElementById("messageInput");
       const message = input.value.trim();
       if (!message) return;
 
-      await fetch(scriptURL, {
+      fetch(SCRIPT_URL, {
         method: "POST",
         body: JSON.stringify({ message }),
-        headers: { "Content-Type": "application/json" }
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).then(() => {
+        input.value = "";
+        loadMessages();
       });
+    }
 
-      input.value = "";
-      loadMessages();
-    });
+    function loadMessages() {
+      fetch(SCRIPT_URL)
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById("messages");
+          container.innerHTML = "";
+          data.reverse().forEach(msg => {
+            const div = document.createElement("div");
+            const date = new Date(msg.date);
+            div.textContent = `[${date.toLocaleTimeString()}] ${msg.message}`;
+            container.appendChild(div);
+          });
+        });
+    }
 
     loadMessages();
     setInterval(loadMessages, 5000); // rafraîchit toutes les 5 secondes
